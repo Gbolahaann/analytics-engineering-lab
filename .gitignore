@@ -1,0 +1,23 @@
+# --- Credentials and secrets: NEVER commit these ---
+profiles.yml
+.env
+*.pem
+*.key
+credentials.json
+
+# --- Python virtual environment: machine-specific, huge, rebuildable ---
+.venv/
+__pycache__/
+*.pyc
+
+# --- dbt generated artefacts: rebuilt on every run, never hand-edited ---
+target/
+dbt_packages/
+logs/
+
+# --- Local databases ---
+*.duckdb
+*.duckdb.wal
+
+# --- macOS junk ---
+.DS_Store
