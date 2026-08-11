@@ -1,0 +1,16 @@
+name: 'fintech_analytics'
+version: '1.0.0'
+profile: 'default'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Materialization config is deliberately not set here.
+# Stage 2 and Stage 3 of CHALLENGE.md ask you to decide it and justify it.
