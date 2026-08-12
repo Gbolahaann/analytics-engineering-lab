@@ -56,8 +56,18 @@ Note: most courses ship in both dbt Studio and VS Code flavours. The VS Code ver
 ## Milestones
 - **2026-08-11: dbt Fundamentals (dbt Studio) COMPLETED.** Certificate issued by dbt Labs. Covered: connections, sources, staging/marts modelling, ref/source, tests, docs, deployment environments and jobs.
 
+- **2026-08-12: Full project scaffolding assembled.** Public repo live (github.com/Gbolahaann/analytics-engineering-lab) with journals, README, Fundamentals export, and the fintech project. Neon Postgres connected to dbt platform (SSL via extended attributes, prod profile `neon-postgres-prod` → schema `analytics`, dev credentials → `dbt_gadebayo`). Production + Development environments configured. `dbt seed` green: 4 raw tables loaded into Neon.
+
+## Concepts covered (additions)
+- **Git from the terminal:** init, gitignore-before-first-commit, staging area, commit message conventions (imperative, ~50-char summary, body for detail; describe the diff, not actions taken elsewhere), gh repo create, push. Commit what you author; ignore what is generated or secret.
+- **dbt platform settings hierarchy:** connection (where the warehouse is) → credentials (who logs in) → extended attributes (adapter options the UI lacks). Project/environment picks the connection; profiles bundle connection + deployment credentials for jobs.
+- **Dev/prod schema separation in practice:** personal dev schema `dbt_gadebayo` vs deployment schema `analytics`; environment types (Development vs Deployment, and PROD designation).
+- **Seeds:** version-controlled CSVs loaded with `dbt seed` — the data ships with the repo, so the whole project is reproducible by anyone who clones it.
+
 ## Next
-- Apply Loop #1: build a fintech project from scratch, applying Fundamentals end to end.
+- Apply Loop #1, Stage 1 (sources + freshness) in `fintech_analytics/CHALLENGE.md`.
+- FIRST: the two thinking exercises — (a) one clean key vocabulary across cust_id/cust_ref, acct_id/acct_no, txn_id/txn_ref; (b) which two seed tables can support freshness, and thresholds.
+- Grain decisions for marts come to the mentor BEFORE building.
 - Commit the uncommitted work on `Gbolahaann-patch-1` (stripe staging + source, fct_orders, dim_customers refactor, freshness config).
 - Confirm where the dbt Cloud project pushes to (managed vs my own public GitHub repo).
 - Continue Fundamentals: tests, then `dbt docs generate` and the lineage graph.

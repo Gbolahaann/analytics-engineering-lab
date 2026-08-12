@@ -78,3 +78,35 @@ The trial warehouse was the compute + storage behind every model. When it expire
 4. Test Connection (green), then `dbt build` to repopulate `dbt_gadebayo`.
 
 **Lesson:** Code and data are separate concerns. A dead warehouse is recoverable because the code is the source of truth and the raw data is reproducible from a load script. Also: dbt Cloud splits settings across two screens — shared **Connection** (account, db, warehouse) vs personal **Credentials** (username, password, schema). Also reconfirmed: raw columns are `user_id` and `orderid`; staging is where they become `customer_id` and `order_id`. That is what staging is for.
+
+---
+
+## 2026-08-12 — "password authentication failed" that was actually a hostname typo
+
+**Where:** Connecting dbt platform to Neon Postgres for the fintech project.
+
+**What it said:**
+`connection to server at "p-spring-resonance-...-pooler..." port 5432 failed: ERROR: password authentication failed for user 'neondb_owner'`
+plus, at first: `connection is insecure (try using sslmode=require)`
+
+**Plain-English cause (two separate problems):**
+1. **SSL:** Neon rejects unencrypted connections outright, and the dbt Postgres connection form has no SSL field. The setting lives in **extended attributes** (a profiles.yml-style textbox on the environment/profile): `sslmode: require`.
+2. **The misleading one:** the hostname was missing one letter — `p-spring-...` instead of `ep-spring-...`. Neon's wildcard DNS resolves ANY `...neon.tech` name to its proxy, so the connection reached Neon, but the proxy could not match the endpoint and surfaced it as a PASSWORD failure. Two password resets changed nothing because the password was never the problem.
+
+**Fix:** `sslmode: require` in extended attributes, and the hostname corrected character-for-character against the Neon Connect widget's connection string.
+
+**Lessons:**
+- "Password authentication failed" can mean "this hostname identifies no endpoint." When a credential error survives a clean password reset, stop resetting and start comparing strings character by character against the source of truth (the provider's connect widget).
+- The database name field takes ONLY the name (`neondb`), never the `?sslmode=...` query string from a connection URL.
+- When a settings UI lacks a field the adapter supports, look for an extended attributes / overrides escape hatch.
+- Settings hierarchy learned the hard way: the **project** picks the connection, **credentials** attach a login to it, **extended attributes** tune the adapter. Editing the wrong level does nothing.
+
+---
+
+## 2026-08-12 — Nearly lost the Fundamentals project by disconnecting a dbt-managed repo
+
+**Cause:** The dbt Fundamentals course code lived in a dbt-cloud-managed repository, not my GitHub. Repointing the project to my own repo required disconnecting the managed one, which makes it unrecoverable from the UI.
+
+**Fix:** Used **Download repository** (ZIP) BEFORE disconnecting, then committed the export into the lab repo as `fundamentals_jaffle_shop/` (minus its `.git` folder — never nest one git repo inside another).
+
+**Lesson:** Export before you disconnect, always. Anything that lives only on a managed platform is one click from gone.
