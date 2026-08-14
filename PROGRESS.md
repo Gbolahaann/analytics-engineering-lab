@@ -64,9 +64,15 @@ Note: most courses ship in both dbt Studio and VS Code flavours. The VS Code ver
 - **Dev/prod schema separation in practice:** personal dev schema `dbt_gadebayo` vs deployment schema `analytics`; environment types (Development vs Deployment, and PROD designation).
 - **Seeds:** version-controlled CSVs loaded with `dbt seed` — the data ships with the repo, so the whole project is reproducible by anyone who clones it.
 
+## Concepts covered (2026-08-14)
+- **Modelling without an ERD:** you derive the ERD from evidence — column-name clues, cardinality probes (`count(*)` vs `count(distinct)`), join success-rate tests, row-count ratios, and the business questions. The investigation becomes the first draft of the test suite.
+- **Pull from remote:** every git clone (terminal, Studio IDE, GitHub) is a full independent copy; pull brings remote commits down, push sends local commits up. Habit: pull at session start, push at session end.
+- **Freshness criterion sharpened:** freshness is only mechanically possible where a load timestamp exists (`_loaded_at`, `_batched_at`); it monitors an ingestion pipeline's heartbeat, not the data itself. Thresholds = load cadence + buffer. Seeds have no pipeline, and frozen CSV timestamps mean ERROR STALE forever — expected, not a bug.
+- **Key vocabulary decided:** customer_id, account_id, transaction_id, payment_id — one canonical name per entity across all staging models, applied to both PK and FK columns.
+
 ## Next
-- Apply Loop #1, Stage 1 (sources + freshness) in `fintech_analytics/CHALLENGE.md`.
-- FIRST: the two thinking exercises — (a) one clean key vocabulary across cust_id/cust_ref, acct_id/acct_no, txn_id/txn_ref; (b) which two seed tables can support freshness, and thresholds.
+- Stage 1 deliverable DUE: sources YAML (3 source systems: crm / core_banking / payments), freshness on the two eligible tables, must pass `dbt parse`, then run `dbt source freshness` and explain the result.
+- Then Stage 2 staging models using the agreed vocabulary.
 - Grain decisions for marts come to the mentor BEFORE building.
 - Commit the uncommitted work on `Gbolahaann-patch-1` (stripe staging + source, fct_orders, dim_customers refactor, freshness config).
 - Confirm where the dbt Cloud project pushes to (managed vs my own public GitHub repo).
