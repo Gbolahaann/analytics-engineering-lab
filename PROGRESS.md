@@ -70,9 +70,25 @@ Note: most courses ship in both dbt Studio and VS Code flavours. The VS Code ver
 - **Freshness criterion sharpened:** freshness is only mechanically possible where a load timestamp exists (`_loaded_at`, `_batched_at`); it monitors an ingestion pipeline's heartbeat, not the data itself. Thresholds = load cadence + buffer. Seeds have no pipeline, and frozen CSV timestamps mean ERROR STALE forever — expected, not a bug.
 - **Key vocabulary decided:** customer_id, account_id, transaction_id, payment_id — one canonical name per entity across all staging models, applied to both PK and FK columns.
 
+## Concepts covered (2026-08-18) — Stage 1 COMPLETE
+- **Sources declared across three source systems:** `crm`, `core_banking`, `payment_processor`, each in its own folder under `models/staging/` with its own `_src_*.yml`. Source `name:` is the logical alias used in code; `schema:` is the physical location. Decoupling them means raw data can move without touching any model.
+- **`source()` vs `ref()` inside a sources file:** `ref()` claims dbt built the thing. Using it on a source does not just read oddly, it draws the wrong edge in the DAG and makes the lineage graph lie about provenance.
+- **Freshness cadence, established not guessed:** ask the pipeline owner, read the ingestion tool's schedule, or measure gaps in `loaded_at` from the data itself. `warn_after` = cadence + one missed cycle (technical). `error_after` = when a stakeholder would act on something untrue (a business SLA).
+- **Reading parse errors:** skip the dict dump, go to the last line, read `at path ['tables'][3]['freshness']` as zero-indexed coordinates, compare the flagged block against a working one. Runtime errors name a database problem; parse errors name a file and a path.
+- **`dbt parse` covers the whole project**, always. Parsing is all-or-nothing; `--select` filters execution afterwards, never parsing. Parse never touches the warehouse, so it is free and fast.
+- **`packages.yml` vs `package-lock.yml`:** what you asked for vs what you got (exact resolved versions). Commit both; `dbt_packages/` stays ignored. Same pattern as a requirements file vs a lockfile.
+- **Generic tests are just SQL you already write.** `unique` = group by, count, having count > 1. `relationships` = anti-join for unmatched keys. dbt's value is not clever SQL, it is running the check automatically forever instead of it living in someone's head.
+- **Read WHICH test failed, do not infer.** `source_unique_...` failing means duplicates, not nulls. Independent failures have independent causes; matching them by count (1 vs 3) disproves a shared cause. Then verify with the compiled SQL rather than theorising.
+
+## Data quality defects found in the raw data (Stage 1 findings)
+- **Duplicate:** `raw_transactions.txn_id = 500011` appears twice (failed `unique`).
+- **Orphans:** `raw_payments.txn_ref` values `999901`, `999902`, `999903` reference transactions that do not exist (failed `relationships`).
+- Both sources permanently ERROR STALE, as expected: seed timestamps are frozen in the CSVs, so even re-running `dbt seed` cannot freshen them.
+
 ## Next
-- Stage 1 deliverable DUE: sources YAML (3 source systems: crm / core_banking / payments), freshness on the two eligible tables, must pass `dbt parse`, then run `dbt source freshness` and explain the result.
-- Then Stage 2 staging models using the agreed vocabulary.
+- Migrate generic test args to the new `arguments:` nesting (deprecation warning on parse).
+- **DECISIONS.md:** the duplicate — where to handle it and why there? The orphans — alert-worthy bug or fact of life to filter?
+- Then Stage 2: staging models using the agreed vocabulary (customer_id / account_id / transaction_id / payment_id).
 - Grain decisions for marts come to the mentor BEFORE building.
 - Commit the uncommitted work on `Gbolahaann-patch-1` (stripe staging + source, fct_orders, dim_customers refactor, freshness config).
 - Confirm where the dbt Cloud project pushes to (managed vs my own public GitHub repo).
