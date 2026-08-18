@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: crm
+    schema: dbt_gadebayo
+    tables:
+
+      - name: raw_customers
+        columns:
+          - name: cust_id
+            description: primary identifier for customers
+            data_type: integer
+            data_tests:
+              - unique
+              - not_null
+          - name: fname
+            data_type: text
+          - name: lname
+            data_type: text
+          - name: email
+            data_type: text
+          - name: dob
+            data_type: date
+          - name: signup_dt
+            data_type: date
+          - name: country_cd
+            data_type: text
+          - name: kyc_status
+            data_type: text
