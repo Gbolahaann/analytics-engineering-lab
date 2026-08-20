@@ -1,0 +1,41 @@
+version: 2
+
+sources:
+  - name: payment_processor
+    schema: dbt_gadebayo
+    tables:
+
+      - name: raw_payments
+        freshness:
+          warn_after:
+            count: 12
+            period: hour
+          error_after:
+            count: 1
+            period: day
+        loaded_at_field: _batched_at
+        columns:
+          - name: pmt_id
+            description: unique identifier for payments table
+            data_type: integer
+            data_tests:
+              - unique
+              - not_null
+          - name: txn_ref
+            description: foreign key to transactions table
+            data_type: integer
+            data_tests:
+              - relationships:
+                  arguments: 
+                  to: source('core_banking','raw_transactions')
+                  field: txn_id
+          - name: pmt_method
+            data_type: text
+          - name: pmt_status
+            data_type: text
+          - name: pmt_amt_pence
+            data_type: integer
+          - name: processed_at
+            data_type: timestamp without time zone
+          - name: _batched_at
+            data_type: timestamp without time zone
